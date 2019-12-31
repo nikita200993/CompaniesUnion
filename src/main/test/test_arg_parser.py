@@ -1,0 +1,33 @@
+from main.CompanyUnionArgumentParser import CompanyUnionArgumentParser
+
+
+class TestArgParser:
+
+    def test_1(self):
+        args = ["./ds.xlsx", "kek.xlsx", "-id", "abc"]
+        arg_parser = CompanyUnionArgumentParser()
+        namespace = arg_parser.parse_args(args)
+        set_of_files_expected = {"./ds.xlsx", "kek.xlsx"}
+        assert set_of_files_expected == {x for x in namespace.datasets}
+
+    def test_2(self):
+        args = ["./ds.xlsx", "kek.xlsx"]
+        arg_parser = CompanyUnionArgumentParser()
+        try:
+            arg_parser.parse_args(args)
+            assert 1 == 0, "exception wasn't thrown"
+        except SystemExit:
+            pass
+
+    def test_3(self):
+        args = ["./ds.xlsx", "kek.xlsx", "-id", "abc"]
+        arg_parser = CompanyUnionArgumentParser()
+        namespace = arg_parser.parse_args(args)
+        assert namespace.idFieldName == "abc"
+
+    def test_4(self):
+        args = ["./ds.xlsx", "kek.xlsx", "-id", "abc kek"]
+        arg_parser = CompanyUnionArgumentParser()
+        namespace = arg_parser.parse_args(args)
+        assert namespace.idFieldName == "abc kek"
+
