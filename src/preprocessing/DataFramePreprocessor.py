@@ -12,22 +12,23 @@ class DataFramePreprocessor:
     @contract(key_name=str)
     def __init__(self, key_name: str):
         self.__original_key_name = key_name
-        self.key_name = Utils.replace_redundant_ws(key_name).lower()
+        self.__key_name = Utils.replace_redundant_ws(key_name).lower()
 
     def get_grouper_dataframe(self, dataframe: pd.DataFrame, name: str):
         dataframe_copy = dataframe.copy(deep=True)
         self._standartize_columns_names(dataframe_copy)
         self._check_key_existence(dataframe_copy)
-        dataframe_copy = dataframe_copy[[self.key_name]]
+        self._check_names_nonempty(dataframe_copy)
+        dataframe_copy = dataframe_copy[[self.__key_name]]
         dataframe_copy.insert(
             1,
-            self.key_name + "_standartized",
-            dataframe_copy[self.key_name].map(Utils.replace_redundant_ws).map(str.lower)
+            self.__key_name + "_standartized",
+            dataframe_copy[self.__key_name].map(Utils.replace_redundant_ws).map(str.lower)
         )
         dataframe_copy.insert(
             2,
-            self.key_name + "_cleaned",
-            dataframe_copy[self.key_name + "_standartized"].map(lambda string: cleanco(string).clean_name())
+            self.__key_name + "_cleaned",
+            dataframe_copy[self.__key_name + "_standartized"].map(lambda string: cleanco(string).clean_name())
         )
         dataframe_copy.insert(
             0,
@@ -59,5 +60,12 @@ class DataFramePreprocessor:
 
     @contract(dataframe=pd.DataFrame)
     def _check_key_existence(self, dataframe: pd.DataFrame):
-        if not dataframe.columns.contains(self.key_name):
+        if not dataframe.columns.contains(self.__key_name):
             raise AssertionError(f"There is no column with key = {self.__original_key_name}")
+
+    @contract(dataframe=pd.DataFrame)
+    def _check_names_nonempty(self, dataframe: pd.DataFrame):
+        if any(dataframe[self.__key_name].isna):
+            raise AssertionError("There is nan value in column with names")
+        if any(dataframe[self.__key_name].map(lambda string: string == "")):
+            raise AssertionError("There is empty string in column with names")
