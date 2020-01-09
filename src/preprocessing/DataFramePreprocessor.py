@@ -1,6 +1,7 @@
-from utils import Utils
+from preprocessing.utils import Utils
 
 import pandas as pd
+import numpy as np
 
 from cleanco import cleanco
 from contracts import contract
@@ -13,9 +14,44 @@ class DataFramePreprocessor:
         self.__original_key_name = key_name
         self.key_name = Utils.replace_redundant_ws(key_name).lower()
 
+    def get_grouper_dataframe(self, dataframe: pd.DataFrame, name: str):
+        dataframe_copy = dataframe.copy(deep=True)
+        self._standartize_columns_names(dataframe_copy)
+        self._check_key_existence(dataframe_copy)
+        dataframe_copy = dataframe_copy[[self.key_name]]
+        dataframe_copy.insert(
+            1,
+            self.key_name + "_standartized",
+            dataframe_copy[self.key_name].map(Utils.replace_redundant_ws).map(str.lower)
+        )
+        dataframe_copy.insert(
+            2,
+            self.key_name + "_cleaned",
+            dataframe_copy[self.key_name + "_standartized"].map(lambda string: cleanco(string).clean_name())
+        )
+        dataframe_copy.insert(
+            0,
+            "file_name",
+            [name] * dataframe_copy.shape[0]
+        )
+        dataframe_copy.insert(
+            4,
+            "group_id",
+            [0]*dataframe_copy.shape[0]
+        )
+        return dataframe_copy
+
+    def get_grouper_dataframe_from_lists(self, dataframe_list, names_list):
+        if len(dataframe_list) != len(names_list):
+            raise AssertionError("Names list size is not equal dataframe list size")
+        transformed_dataframe_list = [self.get_grouper_dataframe(df, name)
+                                      for df, name in zip(dataframe_list, names_list)
+                                      ]
+        return pd.concat(transformed_dataframe_list, ignore_index=True)
+
     @staticmethod
     @contract(dataframe=pd.DataFrame)
-    def standartize_columns_names(dataframe: pd.DataFrame):
+    def _standartize_columns_names(dataframe: pd.DataFrame):
         dataframe.columns = pd.Index(
             data=[Utils.replace_redundant_ws(column_name).lower()
                   for column_name in dataframe.columns]
@@ -25,25 +61,3 @@ class DataFramePreprocessor:
     def _check_key_existence(self, dataframe: pd.DataFrame):
         if not dataframe.columns.contains(self.key_name):
             raise AssertionError(f"There is no column with key = {self.__original_key_name}")
-
-    @contract(dataframe=pd.DataFrame)
-    def _standartize_column_with_names(self, dataframe: pd.DataFrame):
-        dataframe[self.key_name] = dataframe[self.key_name].map(Utils.replace_redundant_ws).map(str.lower)
-
-    @contract(dataframe=pd.DataFrame)
-    def _add_cleaned_names_column(self, dataframe: pd.DataFrame):
-        index = 0
-        found = False
-        for col_name in dataframe.columns:
-            if col_name == self.key_name:
-                found = True
-                break
-            index += 1
-        if not found:
-            raise AssertionError(f"There is no column with key = {self.__original_key_name}")
-        dataframe.insert(
-            index + 1,
-            self.key_name + "_cleaned",
-            dataframe[self.key_name].map(lambda string: cleanco(string).clean_name())
-        )
-
