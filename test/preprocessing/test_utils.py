@@ -1,4 +1,4 @@
-from utils import Utils
+from companies_union.preprocessing.utils import Utils
 from contracts import ContractNotRespected
 
 

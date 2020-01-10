@@ -1,4 +1,4 @@
-from main.CompanyUnionArgumentParser import CompanyUnionArgumentParser
+from companies_union.CompanyUnionArgumentParser import CompanyUnionArgumentParser
 
 
 class TestArgParser:

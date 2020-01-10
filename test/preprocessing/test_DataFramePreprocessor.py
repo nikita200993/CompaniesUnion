@@ -1,4 +1,4 @@
-from DataFramePreprocessor import DataFramePreprocessor
+from companies_union.preprocessing.DataFramePreprocessor import DataFramePreprocessor
 
 import pandas as pd
 

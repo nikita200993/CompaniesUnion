@@ -3,8 +3,8 @@ import collections.abc as abc
 from os import path
 from contracts import contract
 
-from main.CompanyUnionArgumentParser import CompanyUnionArgumentParser
-from preprocessing.DataFramePreprocessor import DataFramePreprocessor
+from companies_union.CompanyUnionArgumentParser import CompanyUnionArgumentParser
+from companies_union.preprocessing.DataFramePreprocessor import DataFramePreprocessor
 
 
 @contract(paths=abc.Iterable)
@@ -41,8 +41,3 @@ if __name__ == "__main__":
     file_names = get_file_names_from_paths(args.datasets)
     processer = DataFramePreprocessor(id_field_name)
     grouper_dataframe = processer.get_grouper_dataframe_from_lists(data_frame_list, file_names)
-
-
-
-
-

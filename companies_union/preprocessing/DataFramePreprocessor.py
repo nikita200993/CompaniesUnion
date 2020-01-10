@@ -1,7 +1,6 @@
-from preprocessing.utils import Utils
+from companies_union.preprocessing.utils import Utils
 
 import pandas as pd
-import numpy as np
 
 from cleanco import cleanco
 from contracts import contract
@@ -65,7 +64,7 @@ class DataFramePreprocessor:
 
     @contract(dataframe=pd.DataFrame)
     def _check_names_nonempty(self, dataframe: pd.DataFrame):
-        if any(dataframe[self.__key_name].isna):
+        if any(dataframe[self.__key_name].isna()):
             raise AssertionError("There is nan value in column with names")
         if any(dataframe[self.__key_name].map(lambda string: string == "")):
             raise AssertionError("There is empty string in column with names")
