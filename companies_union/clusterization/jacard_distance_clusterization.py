@@ -1,26 +1,82 @@
 from typing import Dict, List, Tuple
+from contracts import contract
+
+
+class FullName:
+
+    def __init__(self, file_name: str, name: str, cleaned_name: str):
+        self.__file_name = file_name
+        self.__name = name
+        self.__cleaned_name = cleaned_name
+        self.__tokens = set(cleaned_name.split(" "))
+
+    def jacard_distance(self, other):
+        if len(self.tokens) == 0 or len(other.tokens) == 0:
+            raise AssertionError("length of list is zero")
+        return 1 - len(self.tokens.intersection(other.tokens)) / len(self.tokens.union(other.tokens))
+
+    @property
+    def file_name(self):
+        return self.__file_name
+
+    @property
+    def name(self):
+        return self.__name
+
+    @property
+    def cleaned_name(self):
+        return self.__cleaned_name
+
+    @property
+    def tokens(self):
+        return self.__tokens
+
+    def __eq__(self, other):
+        if self is other:
+            return True
+        elif other is None:
+            return False
+        elif not isinstance(other, FullName):
+            return False
+        else:
+            return self.file_name == other.file_name and self.name == other.name
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __hash__(self):
+        hash((self.file_name, self.name))
+
+    def __repr__(self):
+        return "file_name: %s, company_name: %s" % (self.file_name, self.name)
 
 
 class JacardDistanceClusterization:
 
-    def __init__(self, map_: Dict[str, List[Tuple[str, str]]], file_name_list: list, treshold=0.25, prefix_treshold=0.3):
+    def __init__(self, map_: Dict[str, List[Tuple[str, str]]], file_name_list: list, treshold=0.25):
         self.__file_to_name_and_cleaned_name_list = map_.copy()
         self.__file_name_list = file_name_list
         self.__treshold = treshold
-        self.__prefix_treshold = prefix_treshold
         self.__next_group = 0
-        self.__full_name_to_group = dict()
-        self.__group_to_full_name = dict()
-        self.__set_of_full_name_in_group = set()
+        self.__maps = _Maps()
 
     def clusterize(self):
-        pairs_list = self._get_full_name_pairs()
-        for pair in pairs_list:
-            self.__update(pair[0], pair[1])
+        full_name_pairs_list = [
+            (FullName(*tuple1), FullName(*tuple2)) for tuple1, tuple2 in self._get_full_name_pairs()
+        ]
+        for full_name1, full_name2 in full_name_pairs_list:
+            if self.__isin(full_name1) and self.__isin(full_name2):
+                continue
+            elif self.__isin(full_name1) and not self.__isin(full_name2):
+                if self.__get_jacard_distance_to_group(full_name2, self.__maps.get_group(full_name1)) <= self.__treshold:
+                    self.__maps.put_second(full_name1, full_name2)
 
-    @staticmethod
-    def get_full_name_from_tokens(pair):
-        return pair[0], " ".join(pair[1])
+            elif not self.__isin(full_name1) and self.__isin(full_name2):
+                if self.__get_jacard_distance_to_group(full_name1, self.__maps.get_group(full_name2)) <= self.__treshold:
+                    self.__maps.put_second(full_name2, full_name1)
+            else:
+                pass
+
 
     def _get_full_name_pairs(self):
         pairs = []
@@ -29,61 +85,68 @@ class JacardDistanceClusterization:
                 for name1, cleaned_name1 in self.__file_to_name_and_cleaned_name_list[self.__file_name_list[idx1]]:
                     for name2, cleaned_name2 in self.__file_to_name_and_cleaned_name_list[self.__file_name_list[idx2]]:
                         pairs.append(
-                            ((name1, cleaned_name1.split(" ")), (name2, cleaned_name2.split(" ")))
+                            (
+                                (self.__file_name_list[idx1], name1, cleaned_name1),
+                                (self.__file_name_list[idx2], name2, cleaned_name2)
+                            )
                         )
         return pairs
 
-    @staticmethod
-    def __jacard_distance(list_one, list_two):
-        if len(list_one) == 0 or len(list_two) == 0:
-            raise AssertionError("length of list is zero")
-        set_one = set(list_one)
-        set_two = set(list_two)
-        return 1 - len(set_one.intersection(set_two)) / len(set_one.union(set_two))
+    def __isin(self, full_name):
+        self.__maps.is_in_group(full_name)
 
     @staticmethod
-    def __is_prefix(list_one, list_two):
-        return list_one[0] == list_two[0]
-
-    @staticmethod
-    def __get_name_and_tokens_list(name_and_cleaned_name_list):
-        for tuple_ in name_and_cleaned_name_list:
-            if not isinstance(tuple_, tuple) and len(tuple_) != 2:
-                raise AssertionError("list contents don't satisfy assertion")
-        return [(name, cleaned_name.split(" ")) for name, cleaned_name in name_and_cleaned_name_list]
-
-    def __update(self, pair_one, pair_two):
-        full_name_one = self.get_full_name_from_tokens(pair_one)
-        full_name_two = self.get_full_name_from_tokens(pair_two)
-        if self.is_in_group(full_name_one) and self.is_in_group(full_name_two):
-            return
-        elif self.is_in_group(full_name_one) and not self.is_in_group(full_name_two):
-            if self.__is_prefix(pair_one[1], pair_two[1]):
-                if self.__jacard_distance(pair_one[1], pair_two[1]) <= self.__prefix_treshold:
-                    self.__put_second(full_name_one, full_name_two)
-            elif self.__jacard_distance(pair_one[1], pair_two[1]) <= self.__treshold:
-                self.__put_second(full_name_one, full_name_two)
-        elif self.is_in_group(full_name_two) and not self.is_in_group(full_name_one):
-            if self.__is_prefix(pair_one[1], pair_two[1]):
-                if self.__jacard_distance(pair_one[1], pair_two[1]) <= self.__prefix_treshold:
-                    self.__put_second(full_name_two, full_name_one)
-            elif self.__jacard_distance(pair_one[1], pair_two[1]) <= self.__treshold:
-                self.__put_second(full_name_two, full_name_one)
-        else:
-            if self.__is_prefix(pair_one[1], pair_two[1]):
-                if self.__jacard_distance(pair_one[1], pair_two[1]) <= self.__prefix_treshold:
-                    self.__put_both(full_name_two, full_name_one)
-            elif self.__jacard_distance(pair_one[1], pair_two[1]) <= self.__treshold:
-                self.__put_both(full_name_two, full_name_one)
+    def __get_jacard_distance_to_group(full_name: FullName, group):
+        return min(
+            map(
+                lambda full_name_: full_name.jacard_distance(full_name_),
+                group
+            )
+        )
 
 
-    def __put_both(self, full_name_one, full_name_two):
-        pass
+class _Maps:
 
-    def __put_second(self, full_name_one, full_name_two):
-        pass
+    def __init__(self):
+        self.current_group = 0
+        self.full_name_to_group = dict()
+        self.group_to_full_name = dict()
+        self.full_names_set = set()
+
+    @contract
+    def is_in_group(self, full_name: FullName):
+        return full_name in self.full_names_set
+
+    @contract
+    def put_both(self, full_name_one: FullName, full_name_two: FullName):
+        self.full_names_set.update((full_name_one, full_name_two))
+        self.full_name_to_group[full_name_one] = self.current_group
+        self.full_name_to_group[full_name_two] = self.current_group
+        self.group_to_full_name[self.current_group] = [full_name_one, full_name_two]
+        self.current_group += 1
+
+    @contract
+    def put_second(self, full_name_one: FullName, full_name_two: FullName):
+        self.full_names_set.add(full_name_two)
+        group = self.full_name_to_group[full_name_one]
+        self.full_name_to_group[full_name_two] = group
+        self.group_to_full_name[group].append(full_name_two)
+
+    def put(self, full_name: FullName):
+        self.full_names_set.add(full_name)
+        self.full_name_to_group[full_name] = self.current_group
+        self.group_to_full_name[self.current_group] = [full_name]
+        self.current_group += 1
+
+    @contract
+    def get_group(self, full_name: FullName):
+        group = self.full_name_to_group.get(full_name)
+        if group is None:
+            raise AssertionError("Should be used only for FullName which is already mapped to group")
+        return self.group_to_full_name[group]
 
 
-    def is_in_group(self, full_name):
-        return full_name in self.__set_of_full_name_in_group
+
+
+
 
