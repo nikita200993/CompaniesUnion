@@ -13,6 +13,6 @@ class TestCompanyNameWithFileName:
         assert CompanyNameWithFileName(*first).tokens == {"a", "b"}
 
     def test_jacard_distances(self):
-        first = ["das", "a e", "a"]
-        second = ["das", "a b c d e", "a b c d"]
-        assert CompanyNameWithFileName(*first).jacard_distance(CompanyNameWithFileName(*second)) == 0.75
+        first = ["das", "a e"]
+        second = ["das", "a b c d e"]
+        assert CompanyNameWithFileName(*first).jacard_distance(CompanyNameWithFileName(*second)) == 0.6
