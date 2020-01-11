@@ -17,13 +17,15 @@ class DataFramePreprocessor:
         self._standartize_columns_names(dataframe_copy)
         self._check_key_existence(dataframe_copy)
         self._check_names_nonempty(dataframe_copy)
-        return map(
-            lambda name: CompanyNameWithFileName(file_name, name),
+        return list(
             map(
-                str.lower,
+                lambda name: CompanyNameWithFileName(file_name, name),
                 map(
-                    Utils.replace_redundant_ws,
-                    dataframe_copy[self.__key_name]
+                    str.lower,
+                    map(
+                        Utils.replace_redundant_ws,
+                        dataframe_copy[self.__key_name]
+                    )
                 )
             )
         )

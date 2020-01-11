@@ -11,3 +11,7 @@ class Utils:
     def replace_redundant_ws(string: str):
         return re.subn(Utils.WS_PATTERN, " ", string)[0].strip()
 
+    @staticmethod
+    def normalize_string(string: str):
+        return re.subn(Utils.WS_PATTERN, " ", string)[0].strip().lower()
+
