@@ -5,6 +5,7 @@ from contracts import contract
 
 from companies_union.CompanyUnionArgumentParser import CompanyUnionArgumentParser
 from companies_union.preprocessing.DataFramePreprocessor import DataFramePreprocessor
+from companies_union.companymapper import CompanyMapper
 
 
 @contract(paths=abc.Iterable)
@@ -36,8 +37,14 @@ def get_file_names_from_paths(paths_to_excel_files: "list of strings representin
 
 if __name__ == "__main__":
     args = CompanyUnionArgumentParser().parse_args()
-    id_field_name = args.idFieldName
-    data_frame_list = get_data_frames_from_paths(args.datasets)
-    file_names = get_file_names_from_paths(args.datasets)
-    processer = DataFramePreprocessor(id_field_name)
-    grouper_dataframe = processer.get_grouper_dataframe_from_lists(data_frame_list, file_names)
+    if args.mapper:
+        id_field_name = args.idFieldName
+        data_frame_list = get_data_frames_from_paths(args.datasets)
+        data_frame_copy_list = [df.copy(deep=True) for df in data_frame_list]
+        file_names = get_file_names_from_paths(args.datasets)
+        processor = DataFramePreprocessor(id_field_name)
+        company_names = processor.get_company_names_from_dataframes(data_frame_list, file_names)
+        args.mapper = ""
+
+    check_existence(path.abspath(args.mapper))
+    mapper = CompanyMapper.create_mapper_from_excel_file(path.abspath(args.mapper))
