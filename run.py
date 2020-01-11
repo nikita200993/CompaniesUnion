@@ -44,7 +44,8 @@ if __name__ == "__main__":
         file_names = get_file_names_from_paths(args.datasets)
         processor = DataFramePreprocessor(id_field_name)
         company_names = processor.get_company_names_from_dataframes(data_frame_list, file_names)
-        args.mapper = ""
+        args.mapper = "mapper.xlsx"
+        CompanyMapper.save_mapper_to_excel(args.mapper)
 
     check_existence(path.abspath(args.mapper))
     mapper = CompanyMapper.create_mapper_from_excel_file(path.abspath(args.mapper))
