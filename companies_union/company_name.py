@@ -10,6 +10,8 @@ class CompanyNameWithFileName:
         self.__name = Utils.replace_redundant_ws(name).lower()
         self.__cleaned_name = cleanco(self.__name).clean_name()
         self.__tokens = set(self.__cleaned_name.split(" "))
+        if len(self.tokens) == 0:
+            raise AssertionError("length of list is zero")
 
     def __eq__(self, other):
         if self is other:
@@ -25,7 +27,7 @@ class CompanyNameWithFileName:
         return not self == other
 
     def __hash__(self):
-        hash((self.file_name, self.name))
+        return hash((self.file_name, self.name))
 
     def __repr__(self):
         return "file_name: %s, company_name: %s" % (self.file_name, self.name)
@@ -49,8 +51,14 @@ class CompanyNameWithFileName:
     def jacard_distance(self, other):
         if not isinstance(other, CompanyNameWithFileName):
             raise TypeError("Argument should be instance of class: %s" % CompanyNameWithFileName.__name__)
-        if self.file_name != other.file_name:
-            return 1
-        if len(self.tokens) == 0 or len(other.tokens) == 0:
-            raise AssertionError("length of list is zero")
+
         return 1 - len(self.tokens.intersection(other.tokens)) / len(self.tokens.union(other.tokens))
+
+    def distance(self, other):
+        if not isinstance(other, CompanyNameWithFileName):
+            raise TypeError("Argument should be instance of class: %s" % CompanyNameWithFileName.__name__)
+        if self.file_name == other.file_name:
+            return 3
+        else:
+            return self.jacard_distance(other)
+
