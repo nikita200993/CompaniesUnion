@@ -7,8 +7,8 @@ from pandas import DataFrame
 def test_mapper_to_df():
     mapper = {
         CompanyNameWithFileName("a", "b"): 1,
-        CompanyNameWithFileName("c", "b"): 1,
         CompanyNameWithFileName("c", "z"): 0,
+        CompanyNameWithFileName("c", "b"): 1,
         CompanyNameWithFileName("c", "ze"): 2
     }
     actual = CompanyMapper.create_dataframe_from_mapper(mapper)
@@ -22,7 +22,10 @@ def test_mapper_to_df():
         data=rows,
         columns=CompanyMapper.COLUMN_NAMES
     )
-
+    print("\n")
+    print(expected)
+    print("\n")
+    print(actual)
     assert actual.equals(expected)
 
 
@@ -38,4 +41,11 @@ def test_df_to_mapper():
         data=rows,
         columns=columns
     )
-    CompanyMapper.create_mapper_from_dataframe(df)
+    actual = CompanyMapper.create_mapper_from_dataframe(df)
+    expected = {
+        CompanyNameWithFileName("a", "b"): 1,
+        CompanyNameWithFileName("c", "b"): 1,
+        CompanyNameWithFileName("c", "z"): 0,
+        CompanyNameWithFileName("c", "ze"): 2
+    }
+    assert actual == expected
