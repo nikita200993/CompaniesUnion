@@ -1,4 +1,4 @@
-from companies_union.clusterization.jacard_distance_clusterization import JacardDistanceClusterization, FullName
+from companies_union.clusterization.jacard_distance_clusterization import JacardDistanceClusterization
 
 
 def test_get_full_name_pairs():
@@ -27,19 +27,3 @@ def test_get_full_name_pairs():
     ]
     assert actual_result == expected_result
 
-
-class TestFullName:
-
-    def test_equals_FullName(self):
-        first = ["das", "a b", "a"]
-        second = ["das", "a b", "c"]
-        assert FullName(*first) == FullName(*second)
-
-    def test_tokens(self):
-        first = ["das", "a b", "a z"]
-        assert FullName(*first).tokens == {"a", "z"}
-
-    def test_jacard_distances(self):
-        first = ["das", "a e", "a"]
-        second = ["das", "a b c d e", "a b c d"]
-        assert FullName(*first).jacard_distance(FullName(*second)) == 0.75
