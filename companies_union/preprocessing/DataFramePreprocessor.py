@@ -21,14 +21,17 @@ class DataFramePreprocessor:
             map(
                 lambda name: CompanyNameWithFileName(file_name, name),
                 map(
-                    str.lower,
-                    map(
-                        Utils.replace_redundant_ws,
-                        dataframe_copy[self.__key_name]
-                    )
+                    Utils.normalize_string,
+                    dataframe_copy[self.__key_name]
                 )
             )
         )
+
+    def get_company_names_from_dataframes(self, dataframe_list: pd.DataFrame, file_name_list: str):
+        result = []
+        for df, file_name in zip(dataframe_list, file_name_list):
+            result.extend(self.get_company_names_from_dataframe(df, file_name))
+        return result
 
     @staticmethod
     @contract(dataframe=pd.DataFrame)
