@@ -1,8 +1,7 @@
 from companies_union.preprocessing.utils import Utils
+from companies_union.company_name import CompanyNameWithFileName
 
 import pandas as pd
-
-from cleanco import cleanco
 from contracts import contract
 
 
@@ -13,41 +12,21 @@ class DataFramePreprocessor:
         self.__original_key_name = key_name
         self.__key_name = Utils.replace_redundant_ws(key_name).lower()
 
-    def get_grouper_dataframe(self, dataframe: pd.DataFrame, name: str):
+    def get_company_names_from_dataframe(self, dataframe: pd.DataFrame, file_name: str):
         dataframe_copy = dataframe.copy(deep=True)
         self._standartize_columns_names(dataframe_copy)
         self._check_key_existence(dataframe_copy)
         self._check_names_nonempty(dataframe_copy)
-        dataframe_copy = dataframe_copy[[self.__key_name]]
-        dataframe_copy.insert(
-            1,
-            self.__key_name + "_standartized",
-            dataframe_copy[self.__key_name].map(Utils.replace_redundant_ws).map(str.lower)
+        return map(
+            lambda name: CompanyNameWithFileName(file_name, name),
+            map(
+                str.lower,
+                map(
+                    Utils.replace_redundant_ws,
+                    dataframe_copy[self.__key_name]
+                )
+            )
         )
-        dataframe_copy.insert(
-            2,
-            self.__key_name + "_cleaned",
-            dataframe_copy[self.__key_name + "_standartized"].map(lambda string: cleanco(string).clean_name())
-        )
-        dataframe_copy.insert(
-            0,
-            "file_name",
-            [name] * dataframe_copy.shape[0]
-        )
-        dataframe_copy.insert(
-            4,
-            "group_id",
-            [0]*dataframe_copy.shape[0]
-        )
-        return dataframe_copy
-
-    def get_grouper_dataframe_from_lists(self, dataframe_list, names_list):
-        if len(dataframe_list) != len(names_list):
-            raise AssertionError("Names list size is not equal dataframe list size")
-        transformed_dataframe_list = [self.get_grouper_dataframe(df, name)
-                                      for df, name in zip(dataframe_list, names_list)
-                                      ]
-        return pd.concat(transformed_dataframe_list, ignore_index=True)
 
     @staticmethod
     @contract(dataframe=pd.DataFrame)
