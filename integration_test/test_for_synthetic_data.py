@@ -77,7 +77,6 @@ def test_synthetic():
     assert actual == expected
 
 
-
 def test_synthetic_2():
     file_names_list = [
         file_name_3,
