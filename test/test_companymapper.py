@@ -88,3 +88,27 @@ def test_get_indexes_of_unique_companies(file_name, series, expected):
     mapper = CompanyMapper(name_to_group)
     actual = mapper.get_indexes_of_unique_companies(series, file_name)
     assert actual == expected
+
+
+def test_get_indexes_of_common_companies():
+    name_to_group = {
+        CompanyNameWithFileName("a", "b"): 1,
+        CompanyNameWithFileName("c", "b"): 1,
+        CompanyNameWithFileName("c", "z"): 0,
+        CompanyNameWithFileName("c", "ze"): 2,
+        CompanyNameWithFileName("d", "ze zE"): 3,
+        CompanyNameWithFileName("d", "b"): 1,
+        CompanyNameWithFileName("d", "z"): 0
+    }
+    mapper = CompanyMapper(name_to_group)
+    file_names_to_series = {
+        "d": Series(("ze ze", "z", "b")),
+        "a": Series(("b",)),
+        "c": Series(("ze", "b", "z"))
+    }
+    actual = mapper.get_indexes_of_common_companies(file_names_to_series)
+    expected = [
+        [None, 2, 1],
+        [0, 1, 2]
+    ]
+    assert actual == expected

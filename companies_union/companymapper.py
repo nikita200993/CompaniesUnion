@@ -4,15 +4,26 @@ from companies_union.preprocessing.utils import Utils
 import os.path as path_utils
 import numpy
 from pandas import DataFrame, Series, read_excel, Index
-from typing import Dict, Tuple, List
+from typing import Dict, Tuple, List, Sized, Iterable, Union
 
 
 class CompanyMapper:
+
     COLUMN_NAMES = ["file_name", "company_name", "group_id"]
 
     def __init__(self, name_to_group: Dict[CompanyNameWithFileName, int]):
         self.__name_to_group = name_to_group.copy()
         self.__group_to_names = CompanyMapper.get_group_to_names(self.__name_to_group)
+        self.__file_names = tuple(
+            sorted(
+                frozenset(
+                    map(
+                        lambda name: name.file_name,
+                        self.__name_to_group.keys()
+                    )
+                )
+            )
+        )
 
     def get_indexes_of_unique_companies(self, series: Series, file_name: str):
         array_with_names = series.to_numpy()
@@ -21,10 +32,22 @@ class CompanyMapper:
         for name in self.__get_unique_names(file_name):
             # print(name, "\n")
             result.append(
-                numpy.where(array_with_names == name.name)[0][0]
+                self.__get_index_of_row(name, series)
             )
         result.sort()
         return result
+
+    def get_indexes_of_common_companies(self, file_name_to_series: Dict[str, Series]):
+        self.__check_file_names(file_name_to_series.keys())
+        result = []
+        for group in sorted(self.__get_non_unique_groups()):
+            index_list = [None] * len(self.__file_names)
+            for name in self.__group_to_names[group]:
+                row_index = self.__get_index_of_row(name, file_name_to_series[name.file_name])
+                index_list[self.__file_names.index(name.file_name)] = row_index
+            result.append(index_list)
+        return result
+
 
     @staticmethod
     def create_dataframe_from_mapper(mapper: Dict[CompanyNameWithFileName, int]) -> DataFrame:
@@ -96,3 +119,27 @@ class CompanyMapper:
                 )
             )
         )
+
+    def __get_non_unique_groups(self) -> Tuple[int]:
+        return tuple(
+            filter(
+                lambda group: len(self.__group_to_names[group]) > 1,
+                self.__group_to_names.keys()
+            )
+        )
+
+    def __check_file_names(self, file_names: Union[Sized, Iterable]):
+        file_names_set = frozenset(file_names)
+        if len(file_names_set) != len(file_names):
+            raise AssertionError("non unique file names in list")
+        if file_names_set != frozenset(self.__file_names):
+            raise AssertionError("File names in passed list are not the same in mapper")
+
+    @staticmethod
+    def __get_index_of_row(name: CompanyNameWithFileName, series: Series):
+        array = numpy.where(series.to_numpy() == name.name)[0]
+        if len(array) == 0:
+            raise AssertionError("Passed series doesn't contain passed company name")
+        if len(array) > 1:
+            raise AssertionError("Passed series contain duplicates")
+        return array[0]
