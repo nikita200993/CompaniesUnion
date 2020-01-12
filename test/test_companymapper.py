@@ -1,7 +1,8 @@
 from companies_union.companymapper import CompanyMapper
 from companies_union.company_name import CompanyNameWithFileName
 
-from pandas import DataFrame
+import pytest
+from pandas import DataFrame, Series
 
 
 def test_mapper_to_df():
@@ -60,8 +61,30 @@ def test_get_group_to_names():
         2: {CompanyNameWithFileName("c", "ze")}
     }
     actual = CompanyMapper.get_group_to_names(name_to_group)
-    print("\n", actual)
     for group in actual.keys():
         actual[group] = set(actual[group])
     assert actual == expected
 
+
+name_to_group = {
+    CompanyNameWithFileName("a", "b"): 1,
+    CompanyNameWithFileName("c", "b"): 1,
+    CompanyNameWithFileName("c", "z"): 0,
+    CompanyNameWithFileName("c", "ze"): 2,
+    CompanyNameWithFileName("d", "ze zE"): 3,
+    CompanyNameWithFileName("d", "b"): 1
+}
+
+
+@pytest.mark.parametrize(
+    "file_name,series,expected",
+    [
+        ("a", Series(("b",)), []),
+        ("c", Series(("ze", "b", "z")), [0, 2]),
+        ("d", Series(("b", "ze ze")), [1])
+    ]
+)
+def test_get_indexes_of_unique_companies(file_name, series, expected):
+    mapper = CompanyMapper(name_to_group)
+    actual = mapper.get_indexes_of_unique_companies(series, file_name)
+    assert actual == expected
