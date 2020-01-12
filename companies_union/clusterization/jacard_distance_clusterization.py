@@ -22,7 +22,7 @@ class JacardDistanceClusterization:
                 for other_name in self.__file_name_to_other_names[file_name]:
                     if not self.__maps.is_in(other_name):
                         if name.distance(other_name) <= self.__treshold:
-                            self.__maps.add_to_group(name, other_name)
+                            self.__maps.add_to_group_if_possible(name, other_name)
 
     def get_group_to_names(self):
         return self.__maps.get_group_to_names()
@@ -63,13 +63,14 @@ class _Maps:
         self.group_to_names[self.next_group] = [name]
         self.next_group += 1
 
-    def add_to_group(self, name: CompanyNameWithFileName, other_name: CompanyNameWithFileName):
-        self.classified_names.add(other_name)
+    def add_to_group_if_possible(self, name: CompanyNameWithFileName, other_name: CompanyNameWithFileName):
         if self.name_to_group.get(name) is None:
             raise AssertionError("Must be in dict")
         group: int = self.name_to_group[name]
-        self.name_to_group[other_name] = group
-        self.group_to_names[group].append(other_name)
+        if not self.__is_name_exists_from_the_same_file(group, other_name):
+            self.classified_names.add(other_name)
+            self.name_to_group[other_name] = group
+            self.group_to_names[group].append(other_name)
 
     def is_in(self, name: CompanyNameWithFileName):
         return name in self.classified_names
@@ -79,6 +80,12 @@ class _Maps:
 
     def get_name_to_group(self):
         return self.name_to_group.copy()
+
+    def __is_name_exists_from_the_same_file(self, group: int, other_name: CompanyNameWithFileName):
+        for name in self.group_to_names[group]:
+            if name.file_name == other_name.file_name:
+                return True
+        return False
 
 
 
