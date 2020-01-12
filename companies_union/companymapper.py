@@ -48,7 +48,6 @@ class CompanyMapper:
             result.append(index_list)
         return result
 
-
     @staticmethod
     def create_dataframe_from_mapper(mapper: Dict[CompanyNameWithFileName, int]) -> DataFrame:
         row_list = []
@@ -82,7 +81,7 @@ class CompanyMapper:
         for _, row in dataframe.iterrows():
             name = CompanyNameWithFileName(
                 row[CompanyMapper.COLUMN_NAMES[0]],
-                row[CompanyMapper.COLUMN_NAMES[1]]
+                Utils.normalize_string(row[CompanyMapper.COLUMN_NAMES[1]])
             )
             mapper[name] = row[CompanyMapper.COLUMN_NAMES[2]]
         return mapper
