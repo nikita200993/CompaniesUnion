@@ -7,16 +7,13 @@ from typing import Dict
 
 
 class CompanyMapper:
+
     COLUMN_NAMES = ["file_name", "company_name", "group_id"]
 
-    def __init__(self, mapper_or_dataframe):
-        if mapper_or_dataframe.__class__ is DataFrame:
-            self.__mapper = CompanyMapper.create_mapper_from_dataframe(mapper_or_dataframe)
-        elif mapper_or_dataframe.__class__ is dict:
-            self.__mapper = mapper_or_dataframe
-        else:
-            raise TypeError("Must be pandas.DataFrame or dict")
-        self.__inverse_mapper = None
+    def __init__(self, name_to_group: Dict[CompanyNameWithFileName, int]):
+        self.__name_to_group = name_to_group.copy()
+        self.__group_to_names = CompanyMapper.get_group_to_names(self.__name_to_group)
+
 
     @staticmethod
     def create_dataframe_from_mapper(mapper: Dict[CompanyNameWithFileName, int]) -> DataFrame:
@@ -63,9 +60,16 @@ class CompanyMapper:
             .create_dataframe_from_mapper(mapper)\
             .to_excel(path_utils.abspath(path))
 
-    def get_inverse_map(self):
-        if self.__inverse_mapper:
-            pass
-        return self.__inverse_mapper.copy()
+    @staticmethod
+    def get_group_to_names(name_to_group: Dict[CompanyNameWithFileName, int]):
+        value_set = set(name_to_group.values())
+        group_to_names = {}
+        for group in value_set:
+            group_to_names[group] = []
+            for name in name_to_group.keys():
+                if name_to_group[name] == group:
+                    group_to_names[group].append(name)
+        return group_to_names
+
 
 

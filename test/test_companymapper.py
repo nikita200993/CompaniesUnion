@@ -22,10 +22,6 @@ def test_mapper_to_df():
         data=rows,
         columns=CompanyMapper.COLUMN_NAMES
     )
-    print("\n")
-    print(expected)
-    print("\n")
-    print(actual)
     assert actual.equals(expected)
 
 
@@ -49,3 +45,23 @@ def test_df_to_mapper():
         CompanyNameWithFileName("c", "ze"): 2
     }
     assert actual == expected
+
+
+def test_get_group_to_names():
+    name_to_group = {
+        CompanyNameWithFileName("a", "b"): 1,
+        CompanyNameWithFileName("c", "b"): 1,
+        CompanyNameWithFileName("c", "z"): 0,
+        CompanyNameWithFileName("c", "ze"): 2
+    }
+    expected = {
+        0: {CompanyNameWithFileName("c", "z")},
+        1: {CompanyNameWithFileName("a", "b"), CompanyNameWithFileName("c", "b")},
+        2: {CompanyNameWithFileName("c", "ze")}
+    }
+    actual = CompanyMapper.get_group_to_names(name_to_group)
+    print("\n", actual)
+    for group in actual.keys():
+        actual[group] = set(actual[group])
+    assert actual == expected
+
