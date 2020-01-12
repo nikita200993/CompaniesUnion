@@ -3,6 +3,7 @@ from companies_union.company_name import CompanyNameWithFileName
 
 import pandas as pd
 from contracts import contract
+from typing import Iterable
 
 
 class DataFramePreprocessor:
@@ -27,7 +28,7 @@ class DataFramePreprocessor:
             )
         )
 
-    def get_company_names_from_dataframes(self, dataframe_list: pd.DataFrame, file_name_list: str):
+    def get_company_names_from_dataframes(self, dataframe_list: Iterable[pd.DataFrame], file_name_list: Iterable[str]):
         result = []
         for df, file_name in zip(dataframe_list, file_name_list):
             result.extend(self.get_company_names_from_dataframe(df, file_name))
