@@ -2,6 +2,7 @@ from companies_union.preprocessing.DataFramePreprocessor import DataFramePreproc
 from companies_union.clusterization.jacard_distance_clusterization import JacardDistanceClusterization
 from companies_union.preprocessing.utils import Utils
 from companies_union.companymapper import CompanyMapper
+from companies_union.union import get_union_from_dataframes
 from pandas import DataFrame, Index
 
 file_name_1 = "b"
@@ -77,4 +78,16 @@ def test_synthetic():
 
 
 
-
+def test_synthetic_2():
+    file_names_list = [
+        file_name_3,
+        file_name_1,
+        file_name_2
+    ]
+    df_list = [
+        df_3,
+        df_1,
+        df_2
+    ]
+    result = get_union_from_dataframes(df_list, file_names_list, "company_name")
+    print("\n", result)
