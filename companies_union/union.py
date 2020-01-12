@@ -61,6 +61,8 @@ def get_union_from_dataframes(dataframes: Iterable[DataFrame], file_names: Itera
         data=row_list,
         columns=new_column_index
     )
+    print(row_list)
+    union_df.to_excel(path_utils.join(getcwd(), "union.xlsx"))
     return union_df
 
 
