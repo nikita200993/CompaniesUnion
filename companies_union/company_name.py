@@ -30,7 +30,7 @@ class CompanyNameWithFileName:
         return hash((self.file_name, self.name))
 
     def __repr__(self):
-        return "file_name: %s, company_name: %s" % (self.file_name, self.name)
+        return "***file_name: %s, company_name: %s***" % (self.file_name, self.name)
 
     @property
     def file_name(self):
