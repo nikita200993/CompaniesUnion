@@ -4,7 +4,7 @@ from companies_union.CompanyUnionArgumentParser import CompanyUnionArgumentParse
 class TestArgParser:
 
     def test_1(self):
-        args = ["./ds.xlsx", "kek.xlsx", "-id", "abc"]
+        args = ["./ds.xlsx", "kek.xlsx", "-f", "abc"]
         arg_parser = CompanyUnionArgumentParser()
         namespace = arg_parser.parse_args(args)
         set_of_files_expected = {"./ds.xlsx", "kek.xlsx"}
@@ -20,14 +20,19 @@ class TestArgParser:
             pass
 
     def test_3(self):
-        args = ["./ds.xlsx", "kek.xlsx", "-id", "abc"]
+        args = ["./ds.xlsx", "kek.xlsx", "-f", "abc"]
         arg_parser = CompanyUnionArgumentParser()
         namespace = arg_parser.parse_args(args)
-        assert namespace.idFieldName == "abc"
+        assert " ".join(namespace.field_name) == "abc"
 
     def test_4(self):
-        args = ["./ds.xlsx", "kek.xlsx", "-id", "abc kek"]
+        args = ["./ds.xlsx", "kek.xlsx", "-f", "abc kek"]
         arg_parser = CompanyUnionArgumentParser()
         namespace = arg_parser.parse_args(args)
-        assert namespace.idFieldName == "abc kek"
+        assert " ".join(namespace.field_name).strip() == "abc kek"
 
+    def test_5(self):
+        args = ["./ds.xlsx", "kek.xlsx", "-f", "abc kek zZa    ", "-m", "Ab.xlsx"]
+        arg_parser = CompanyUnionArgumentParser()
+        namespace = arg_parser.parse_args(args)
+        assert namespace.mapper == "Ab.xlsx"

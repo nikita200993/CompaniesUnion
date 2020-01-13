@@ -25,6 +25,10 @@ class CompanyMapper:
             )
         )
 
+    @property
+    def name_to_group(self):
+        return self.__name_to_group
+
     def get_indexes_of_unique_companies(self, series: Series, file_name: str):
         array_with_names = series.to_numpy()
         # print("array with names:", array_with_names, "\n")
@@ -49,9 +53,9 @@ class CompanyMapper:
         return result
 
     @staticmethod
-    def create_dataframe_from_mapper(mapper: Dict[CompanyNameWithFileName, int]) -> DataFrame:
+    def create_dataframe_from_mapper(mapper) -> DataFrame:
         row_list = []
-        for name, group in mapper.items():
+        for name, group in mapper.name_to_group.items():
             row = [name.file_name, name.name, group]
             row_list.append(row)
         result = DataFrame(
@@ -63,12 +67,12 @@ class CompanyMapper:
         return result
 
     @staticmethod
-    def create_mapper_from_excel_file(path: str) -> Dict[CompanyNameWithFileName, int]:
+    def create_mapper_from_excel_file(path: str) :
         dataframe = read_excel(path_utils.abspath(path))
         return CompanyMapper.create_mapper_from_dataframe(dataframe)
 
     @staticmethod
-    def create_mapper_from_dataframe(dataframe: DataFrame) -> Dict[CompanyNameWithFileName, int]:
+    def create_mapper_from_dataframe(dataframe: DataFrame):
         dataframe.columns = Index(
             map(
                 Utils.normalize_string,
@@ -77,17 +81,17 @@ class CompanyMapper:
         if not set(CompanyMapper.COLUMN_NAMES).issubset(set(dataframe.columns)):
             raise AssertionError("dataframe")
         dataframe = dataframe[CompanyMapper.COLUMN_NAMES]
-        mapper: Dict[CompanyNameWithFileName, int] = {}
+        name_to_group: Dict[CompanyNameWithFileName, int] = {}
         for _, row in dataframe.iterrows():
             name = CompanyNameWithFileName(
                 row[CompanyMapper.COLUMN_NAMES[0]],
                 Utils.normalize_string(row[CompanyMapper.COLUMN_NAMES[1]])
             )
-            mapper[name] = row[CompanyMapper.COLUMN_NAMES[2]]
-        return mapper
+            name_to_group[name] = row[CompanyMapper.COLUMN_NAMES[2]]
+        return CompanyMapper(name_to_group)
 
     @staticmethod
-    def save_mapper_to_excel(path: str, mapper: Dict[CompanyNameWithFileName, int]) -> None:
+    def save_mapper_to_excel(path: str, mapper) -> None:
         CompanyMapper \
             .create_dataframe_from_mapper(mapper) \
             .to_excel(path_utils.abspath(path))

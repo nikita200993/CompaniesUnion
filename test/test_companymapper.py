@@ -6,13 +6,13 @@ from pandas import DataFrame, Series
 
 
 def test_mapper_to_df():
-    mapper = {
+    name_to_group = {
         CompanyNameWithFileName("a", "b"): 1,
         CompanyNameWithFileName("c", "z"): 0,
         CompanyNameWithFileName("c", "b"): 1,
         CompanyNameWithFileName("c", "ze"): 2
     }
-    actual = CompanyMapper.create_dataframe_from_mapper(mapper)
+    actual = CompanyMapper.create_dataframe_from_mapper(CompanyMapper(name_to_group))
     rows = [
         ["a", "b", 1],
         ["c", "b", 1],
@@ -38,7 +38,7 @@ def test_df_to_mapper():
         data=rows,
         columns=columns
     )
-    actual = CompanyMapper.create_mapper_from_dataframe(df)
+    actual = CompanyMapper.create_mapper_from_dataframe(df).name_to_group
     expected = {
         CompanyNameWithFileName("a", "b"): 1,
         CompanyNameWithFileName("c", "b"): 1,
