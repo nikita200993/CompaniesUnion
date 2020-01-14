@@ -36,6 +36,10 @@ def get_union_from_dataframes(dataframes: Iterable[DataFrame], file_names: Itera
         clusterizator.clusterize()
         mapper_path = path_utils.join(save_path, "mapper.xlsx")
         CompanyMapper.save_mapper_to_excel(mapper_path, CompanyMapper(clusterizator.get_name_to_group()))
+    return get_union_with_mapper(dataframes, file_names, key, mapper_path, save_path)
+
+
+def get_union_with_mapper(dataframes: Iterable[DataFrame], file_names: Iterable[str], key: str, mapper_path, save_path) -> DataFrame:
     file_name_to_series = {}
     for file_name, df in zip(file_names, dataframes):
         df_copy = df.copy()
