@@ -16,7 +16,7 @@
 
 ##How to run
 I suggest to create virtual environment in directory with project. Activate virtual environment.
-Run `pip3 install -e .`. This is performed once. Whenever you want to run script, you activate virtual environment
+Run `pip3 install -e .`. After installing suggest you running test `py.test -v -s integration_test test`. This is performed once. Whenever you want to run script, you activate virtual environment
 and run script.
 
 ## Mapper dataframe
