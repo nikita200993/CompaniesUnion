@@ -23,7 +23,6 @@ def test_on_real_files_2():
         ("-m", path_utils.join("resources", "processedMapper.xlsx"))
     )
     args = CompanyUnionArgumentParser().parse_args(cmd_line_args)
-    print("\nmapper = ", args.mapper)
     file_names = map(lambda file_name: path_utils.join("resources", file_name), args.datasets)
     field_name = " ".join(args.field_name).strip()
     actual = get_union_from_files(file_names, field_name, mapper_path=args.mapper, save_path=args.target)
