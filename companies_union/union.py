@@ -8,13 +8,13 @@ from typing import Iterable
 from pandas import DataFrame, Index, MultiIndex, read_excel
 
 
-def get_union_from_files(paths: Iterable[str], key: str, mapper_path=None, save_path="."):
+def get_union_from_files(paths: Iterable[str], key: str, mapper_path=None, save_path=".") -> DataFrame:
     file_paths_absolute = [path_utils.abspath(file_name) for file_name in paths]
     check_existence(file_paths_absolute)
     file_names = [path_utils.basename(path) for path in file_paths_absolute]
     file_names = sorted(file_names)
     dataframes = [read_excel(path) for path in file_paths_absolute]
-    get_union_from_dataframes(dataframes, file_names, Utils.normalize_string(key), mapper_path, save_path)
+    return get_union_from_dataframes(dataframes, file_names, Utils.normalize_string(key), mapper_path, save_path)
 
 
 def get_union_from_dataframes(dataframes: Iterable[DataFrame], file_names: Iterable[str], key: str, mapper_path=None, save_path="."):
