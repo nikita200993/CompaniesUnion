@@ -79,7 +79,7 @@ class CompanyMapper:
                 dataframe.columns)
         )
         if not set(CompanyMapper.COLUMN_NAMES).issubset(set(dataframe.columns)):
-            raise AssertionError("dataframe")
+            raise AssertionError("necessary columns do not exist")
         dataframe = dataframe[CompanyMapper.COLUMN_NAMES]
         name_to_group: Dict[CompanyNameWithFileName, int] = {}
         for _, row in dataframe.iterrows():
